@@ -1,6 +1,7 @@
 https://fnote.medium.com/setting-up-apache-kafka-in-windows-1835141c3a32
 https://www.loginradius.com/blog/engineering/quick-kafka-installation/
 
+cd C:\dev\kafka_2.12-3.4.0
 .\bin\windows\zookeeper-server-start.bat .\config\zookeeper.properties
 .\bin\windows\kafka-server-start.bat .\config\server.properties
 
