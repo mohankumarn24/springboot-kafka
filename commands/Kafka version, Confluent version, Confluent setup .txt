@@ -1,0 +1,20 @@
+Kafka	  : kafka_2.12-3.4.0
+Confluent : 6.2.0
+
+Confluent setup:
+https://www.youtube.com/watch?v=D5TSOt3hVTU
+
+Steps to set up Confluent: (https://www.youtube.com/watch?v=D5TSOt3hVTU)
+ - Install Lubuntu in Oracle Virtual Box
+ - Create folder 'confluent' and download Confluent 6.2.0 (https://packages.confluent.io/archive/6.2/confluent-6.2.0.tar.gz) to this folder. Then extract
+ - Set up below environment variables:
+        cd /home/mohan/confluent
+        export CONFLUENT_HOME=/home/mohan/confluent/confluent-6.2.0
+        printenv CONFLUENT_HOME
+        export PATH=$CONFLUENT_HOME/bin:$PATH
+        printenv PATH
+        confluent local services start
+ - ifconfig -> gives ip address of Lubuntu OS (192.168.1.112)
+ - Access this URL from host OS
+ - http://192.168.1.112:8081/schemas
+ - http://192.168.1.112:9021/clusters
