@@ -12,12 +12,12 @@ public class OrderProducer {
     public static void main(String[] args) {
 
         Properties props = new Properties();
-        props.setProperty("bootstrap.servers", "http://192.168.1.112:9092");
+        props.setProperty("bootstrap.servers", "http://172.25.50.202:9092");
         props.setProperty("key.serializer", KafkaAvroSerializer.class.getName());
         props.setProperty("value.serializer", KafkaAvroSerializer.class.getName());
         // confluent local services start
         // http://192.168.1.112:8081/schemas
-        props.setProperty("schema.registry.url", "http://192.168.1.112:8081");
+        props.setProperty("schema.registry.url", "http://172.25.50.202:8081");
 
         KafkaProducer<String, Order> producer = new KafkaProducer<>(props);
         Order order = new Order("Mohan","avro iPhone14",3);

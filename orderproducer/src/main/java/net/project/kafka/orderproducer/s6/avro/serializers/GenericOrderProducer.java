@@ -1,7 +1,6 @@
 package net.project.kafka.orderproducer.s6.avro.serializers;
 
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
-import lombok.extern.slf4j.Slf4j;
 import net.project.kafka.orderproducer.s4.producerconsumer.OrderCallBack;
 import org.apache.avro.Schema;
 import org.apache.avro.Schema.Parser;
@@ -11,17 +10,14 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import java.util.Properties;
 
-@Slf4j
 public class GenericOrderProducer {
     public static void main(String[] args) {
 
         Properties props = new Properties();
-        props.setProperty("bootstrap.servers", "http://192.168.1.112:9092");
+        props.setProperty("bootstrap.servers", "http://172.25.50.202:9092");
         props.setProperty("key.serializer", KafkaAvroSerializer.class.getName());
         props.setProperty("value.serializer", KafkaAvroSerializer.class.getName());
-        // confluent local services start
-        // http://http://192.168.1.112:8081/schemas
-        props.setProperty("schema.registry.url", "http://192.168.1.112:8081");
+        props.setProperty("schema.registry.url", "http://172.25.50.202:8081");
 
         KafkaProducer<String, GenericRecord> producer = new KafkaProducer<>(props);
         Parser parser = new Schema.Parser();
@@ -52,6 +48,14 @@ public class GenericOrderProducer {
         }
     }
 }
+
+/*
+Confluent Commands & URLs:
+ - confluent local services start
+ - http://172.25.50.202:9021/clusters
+ - http://172.25.50.202:8081/schemas
+ - confluent local services stop
+*/
 
 /*
 [

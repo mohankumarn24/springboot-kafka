@@ -14,24 +14,28 @@ public class OrderConsumer {
     public static void main(String[] args) {
 
         Properties props = new Properties();
-        props.setProperty("bootstrap.servers", "http://192.168.1.112:9092");
+        props.setProperty("bootstrap.servers", "http://172.25.50.202:9092");
         props.setProperty("key.deserializer", KafkaAvroDeserializer.class.getName());
         props.setProperty("value.deserializer", KafkaAvroDeserializer.class.getName());
         props.setProperty("group.id", "OrderGroup");
-        props.setProperty("schema.registry.url", "http://192.168.1.112:8081");
+        props.setProperty("schema.registry.url", "http://172.25.50.202:8081");
         props.setProperty("specific.avro.reader", "true");
 
         KafkaConsumer<String, Order> consumer = new KafkaConsumer<>(props);
         consumer.subscribe(Collections.singletonList("OrderAvroTopic"));
 
-        ConsumerRecords<String, Order> records = consumer.poll(Duration.ofSeconds(200));
-        for (ConsumerRecord<String, Order> record : records) {
-            String customerName = record.key();
-            Order order = record.value();
-            System.out.println("Customer Name: " + customerName);
-            System.out.println("Product: " + order.getProduct());
-            System.out.println("Quantity: " + order.getQuantity());
+        try {
+            // run infinitely
+            while (true) {
+                ConsumerRecords<String, Order> records = consumer.poll(Duration.ofSeconds(2));
+                for (ConsumerRecord<String, Order> record : records) {
+                    String customerName = record.key();
+                    Order order = record.value();
+                    System.out.println(String.format("CustomerName=%s, Product=%s, Quantity=%d", customerName, order.getProduct(), order.getQuantity()));
+                }
+            }
+        } finally {
+            consumer.close();
         }
-        consumer.close();
     }
 }
