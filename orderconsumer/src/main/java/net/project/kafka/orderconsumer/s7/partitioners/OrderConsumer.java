@@ -1,9 +1,8 @@
-package net.project.kafka.orderconsumer.s5.serializerdeserializer;
+package net.project.kafka.orderconsumer.s7.partitioners;
 
-import net.project.kafka.orderconsumer.s5.serializerdeserializer.model.Order;
+import net.project.kafka.orderconsumer.s7.partitioners.model.Order;
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.common.serialization.StringDeserializer;
-
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Properties;
@@ -19,16 +18,20 @@ public class OrderConsumer {
         props.setProperty(ConsumerConfig.GROUP_ID_CONFIG, "OrderGroup"); // https://www.confluent.io/blog/configuring-apache-kafka-consumer-group-ids/
 
         KafkaConsumer<String, Order> consumer = new KafkaConsumer<>(props);
-        consumer.subscribe(Collections.singletonList("OrderCSTopic"));
+        consumer.subscribe(Collections.singletonList("OrderPartitionedTopic"));
 
-        ConsumerRecords<String, Order> records = consumer.poll(Duration.ofSeconds(20));
-        for (ConsumerRecord<String, Order> record: records) {
-            String customerName = record.key();
-            Order order = record.value();
-            System.out.println("Customer Name: " + customerName);
-            System.out.println("Product: " + order.getProduct());
-            System.out.println("Quantity: " + order.getQuantity());
+        try {
+            while (true) {
+                ConsumerRecords<String, Order> records = consumer.poll(Duration.ofSeconds(2));
+                for (ConsumerRecord<String, Order> record: records) {
+                    String customerName = record.key();
+                    Order order = record.value();
+                    System.out.println(String.format("CustomerName=%s, Product=%s, Quantity=%d, Partition=%d",
+                            customerName, order.getProduct(), order.getQuantity(), record.partition()));
+                }
+            }
+        } finally {
+            consumer.close();
         }
-        consumer.close();
     }
 }
