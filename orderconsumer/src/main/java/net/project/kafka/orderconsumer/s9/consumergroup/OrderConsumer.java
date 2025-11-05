@@ -17,7 +17,7 @@ public class OrderConsumer {
         props.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, OrderDeserializer.class.getName());
         props.setProperty(ConsumerConfig.GROUP_ID_CONFIG, "OrderGroup");
         // props.setProperty("auto.commit.interval.ms", "2000");
-        props.setProperty("auto.commit.offset", "false");
+        props.setProperty("auto.commit.offset", "false");   // manually committing offsets, giving user control over when a message is considered processed
 
         /*
 		props.setProperty(ConsumerConfig.FETCH_MIN_BYTES_CONFIG, "102412323");
@@ -32,18 +32,24 @@ public class OrderConsumer {
 		props.setProperty(ConsumerConfig.PARTITION_ASSIGNMENT_STRATEGY_CONFIG, RoundRobinAssignor.class.getName());
 		*/
 
+        // Keeps track of the latest processed offsets for each partition
+        // Important for manual commits and safe rebalance handling
         Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
         KafkaConsumer<String, Order> consumer = new KafkaConsumer<>(props);
 
         // below methods are invoked suppose if re-balance happens. It must be written before subscribe method
+        // Kafka can rebalance partitions when consumers join/leave the group or when topic partitions are added/removed
         class RebalanceHandler implements ConsumerRebalanceListener {
 
             // commit any offsets that are processed, but not yet committed before re-balance
+            // Before partitions are taken away, commit the offsets of messages you’ve processed.
             @Override
             public void onPartitionsRevoked(Collection<TopicPartition> collection) {
                 consumer.commitSync(currentOffsets); // commit last record that was processed before re-balance
             }
 
+            // When partitions are assigned, seek to the last committed offset for each partition.
+            // After partitions are assigned, seek to the last committed offsets to avoid processing duplicates.
             @Override
             public void onPartitionsAssigned(Collection<TopicPartition> collection) {
 
@@ -63,10 +69,13 @@ public class OrderConsumer {
                     System.out.println(String.format("CustomerName=%s, Product=%s, Quantity=%d, Partition=%d", customerName, order.getProduct(), order.getQuantity(), record.partition()));
 
                     // this map will have the latest offset that is processed. Useful when re-balance
+                    // Updates currentOffsets map with the next offset (record.offset() + 1) for that partition
                     currentOffsets.put(new TopicPartition(record.topic(), record.partition()),
                             new OffsetAndMetadata(record.offset() + 1));
 
                     // offset commit. To minimize risk when re-balance happens
+                    // Commits offsets asynchronously every 10 records. Async commits are faster but can fail silently; handled by OffsetCommitCallback
+                    // The count % 10 commit strategy balances performance and reliability
                     if (count % 10 == 0) {
                         consumer.commitAsync(currentOffsets, new OffsetCommitCallback() {
                             @Override
@@ -80,9 +89,10 @@ public class OrderConsumer {
                     count++;
                 }
                 // commitSync, commitAsync, custom commit
-                // consumer.commitSync();
+                // consumer.commitSync();                       // commitSync(): Blocks until offsets are committed. Safer but slower.
 
                 /*
+                // Non-blocking, faster. Use callback to catch errors.
                 consumer.commitAsync(new OffsetCommitCallback() {
                     @Override
                     public void onComplete(Map<TopicPartition, OffsetAndMetadata> offsets, Exception e) {
