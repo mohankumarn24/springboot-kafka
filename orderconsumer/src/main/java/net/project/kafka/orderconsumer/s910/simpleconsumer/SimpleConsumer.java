@@ -18,8 +18,10 @@ public class SimpleConsumer {
         props.setProperty(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         props.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.StringDeserializer");
         props.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.apache.kafka.common.serialization.IntegerDeserializer");
-        // props.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest"); // use this if you read messages from first offset. Create topic by running producer, uncomment this to read, and then comment it as the topic exists
         // props.setProperty(ConsumerConfig.GROUP_ID_CONFIG, "SimpleConsumerGroup");
+        // use this if you read messages from first offset. Create topic by running producer, uncomment this to read, and then comment it as the topic exists
+        // props.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest"); 
+
 
         KafkaConsumer<String, Integer> consumer = new KafkaConsumer<>(props);
         List<PartitionInfo> partitionInfos = consumer.partitionsFor("SimpleConsumerTopic");
